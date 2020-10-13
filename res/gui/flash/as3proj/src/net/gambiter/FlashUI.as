@@ -1,15 +1,17 @@
-﻿package net.gambiter
+package net.gambiter
 {
+	// Flash Imports
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
-	
+	// Gambiter Imports
 	import net.gambiter.utils.Components;
 	import net.gambiter.utils.Properties;
-	
+	// WG Imports
+	import net.wg.infrastructure.interfaces.ISimpleManagedContainer;
 	import net.wg.infrastructure.managers.impl.ContainerManagerBase;
 	import net.wg.gui.components.containers.MainViewContainer;
 	import net.wg.infrastructure.base.AbstractView;
-	import net.wg.data.constants.generated.APP_CONTAINERS_NAMES;
+	import net.wg.data.constants.generated.LAYER_NAMES;
 	
 	public class FlashUI extends AbstractView
 	{
@@ -72,7 +74,8 @@
 			try
 			{
 				parent.removeChild(this);
-				viewContainer = (App.containerMgr as ContainerManagerBase).containersMap[APP_CONTAINERS_NAMES.VIEWS];
+				var viewContainer:MainViewContainer = _getContainer(LAYER_NAMES.VIEWS) as MainViewContainer;
+				//viewContainer = (App.containerMgr as ContainerManagerBase)._getContainer(LAYER_NAMES.VIEWS) as MainViewContainer;
 				viewContainer.setFocusedView(viewContainer.getTopmostView());
 				viewPage = viewContainer.getChildByName(NAME_MAIN) as DisplayObjectContainer;
 			}
@@ -81,6 +84,7 @@
 				py_log(error.getStackTrace());
 			}
 		}
+		
 		
 		override protected function onDispose():void
 		{
@@ -185,7 +189,14 @@
 				py_log(error.getStackTrace());
 			}
 		}
-				
+		
+		// Wot 1.10.1
+		private function _getContainer(containerName:String) : ISimpleManagedContainer
+		{
+			return App.containerMgr.getContainer(LAYER_NAMES.LAYER_ORDER.indexOf(containerName))
+		}
+		
+		
 		private function deleteComponent(alias:String):void
 		{
 			try
