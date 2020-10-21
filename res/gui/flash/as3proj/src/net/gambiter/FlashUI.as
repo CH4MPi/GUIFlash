@@ -29,12 +29,9 @@
 		public var epicMapOverlayVisibility:Boolean;
 		public var epicRespawnOverlayVisibility:Boolean;
 		public var battleRoyaleRespawnVisibility:Boolean;
-		
+
 		public var screenSize:Object;
-		
-		//private var viewContainer:MainViewContainer;
 		private var viewPage:DisplayObjectContainer;
-		
 		private var components:Object;
 		
 		public function FlashUI()
@@ -65,23 +62,6 @@
 			
 			screenSize = {width: SCREEN_WIDTH, height: SCREEN_HEIGHT};
 		}
-		
-		//override protected function onPopulate():void
-		//{
-			//super.onPopulate();
-			//
-			//try
-			//{
-				//parent.removeChild(this);
-				//var viewContainer:MainViewContainer = _getContainer(LAYER_NAMES.VIEWS) as MainViewContainer;
-				//viewContainer.setFocusedView(viewContainer.getTopmostView());
-				//viewPage = viewContainer.getChildByName(NAME_MAIN) as DisplayObjectContainer;
-			//}
-			//catch (error:Error)
-			//{
-				//py_log(error.getStackTrace());
-			//}
-		//}
 
 		override protected function onPopulate():void
 		{
@@ -90,7 +70,6 @@
 			try
 			{
 				parent.removeChild(this);
-				//viewContainer = (App.containerMgr as ContainerManagerBase).containersMap[APP_CONTAINERS_NAMES.VIEWS];
 				var viewContainer:MainViewContainer = _getContainer(LAYER_NAMES.VIEWS) as MainViewContainer;
 				if (viewContainer != null)
 				{
@@ -102,7 +81,7 @@
 					else{
 						py_log("Error: topmostView is NULL!");
 					}
-                    viewPage = viewContainer.getChildByName(NAME_MAIN) as DisplayObjectContainer;
+					viewPage = viewContainer.getChildByName(NAME_MAIN) as DisplayObjectContainer;
 				}
 				else
 				{
