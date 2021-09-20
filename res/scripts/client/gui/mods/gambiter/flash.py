@@ -5,6 +5,7 @@ __all__ = ['COMPONENT_TYPE', 'COMPONENT_ALIGN', 'COMPONENT_EVENT']
 import codecs
 import json
 
+import BigWorld
 import GUI
 
 import BattleReplay
@@ -64,9 +65,9 @@ class Cache(object):
     def __init__(self):
         self.components = {}
 
-    def create(self, alias, type, props):
-        LOG_DEBUG("Create cache: '%s' [%s] -> Properties: %s" % (alias, type, props))
-        self.components[alias] = {'type': type, 'props': props}
+    def create(self, alias, _type, props, battle=True, lobby=False):
+        LOG_DEBUG("Create cache: '%s' [%s] -> Properties: %s, battle: %s, lobby: %s" % (alias, _type, props, battle, lobby))
+        self.components[alias] = {'type': _type, 'props': props, 'battle': battle, 'lobby': lobby}
 
     def update(self, alias, props):
         LOG_DEBUG("Change cache: '%s' -> Properties: %s" % (alias, props))
@@ -79,32 +80,39 @@ class Cache(object):
     def isComponent(self, alias):
         return alias in self.components
 
+    def isActiveComponent(self, alias):
+        if alias not in self.components:
+            return False
+        if hasattr(BigWorld.player(), 'arena'):
+            return self.components[alias]['battle']
+        return self.components[alias]['lobby']
+
     def getComponent(self, alias=None):
         if alias is None:
             return self.components
         return self.components.get(alias)
 
     def getKeys(self):
-        return sorted(self.components.keys())
+        return sorted(filter(self.isActiveComponent, self.components.keys()))
 
-    def getCustomizedType(self, type):
-        return ''.join(type.split()).capitalize()
+    def getCustomizedType(self, compType):
+        return ''.join(compType.split()).capitalize()
 
-    def isTypeValid(self, type):
-        return type in ALL_COMPONENT_TYPES
+    def isTypeValid(self, compType):
+        return compType in ALL_COMPONENT_TYPES
 
     # ..
-    def readConfig(self, file):
-        LOG_DEBUG("Read config from file '%s'." % file)
-        with open(file, "r") as file:
-            data = json.load(file)
+    def readConfig(self, path):
+        LOG_DEBUG("Read config from file '%s'." % path)
+        with open(path, "r") as f:
+            data = json.load(f)
         return data
 
     # ..
-    def saveConfig(self, file, data):
-        LOG_DEBUG("Save config in file '%s'." % file)
-        with open(file, 'wb') as file:
-            json.dump(data, codecs.getwriter('utf-8')(file), indent=4, sort_keys=True, ensure_ascii=False)
+    def saveConfig(self, path, data):
+        LOG_DEBUG("Save config in file '%s'." % path)
+        with codecs.open(path, 'w', 'utf-8') as f:
+            json.dump(data, f, indent=4, sort_keys=True, ensure_ascii=False)
 
 
 class Views(object):
@@ -116,11 +124,13 @@ class Views(object):
         for alias in g_guiCache.getKeys():
             component = g_guiCache.getComponent(alias)
             self.create(alias, component.get('type'), component.get('props'))
+        if not hasattr(BigWorld.player(), 'arena'):
+            self.cursor(True)
 
-    def create(self, alias, type, props):
+    def create(self, alias, compType, props):
         if self.ui is not None:
-            LOG_DEBUG("Create component: '%s' [%s] -> Properties: %s" % (alias, type, props))
-            self.ui.as_createS(alias, type, props)
+            LOG_DEBUG("Create component: '%s' [%s] -> Properties: %s" % (alias, compType, props))
+            self.ui.as_createS(alias, compType, props)
 
     def update(self, alias, props, params):
         if self.ui is not None:
@@ -274,12 +284,10 @@ class Hooks(object):
         g_guiEvents.resizeStage()
 
     def __handleShowCursor(self, _):
-        isShow = True
-        g_guiEvents.toggleCursor(isShow)
+        g_guiEvents.toggleCursor(True)
 
     def __handleHideCursor(self, _):
-        isShow = False
-        g_guiEvents.toggleCursor(isShow)
+        g_guiEvents.toggleCursor(False)
 
     def __toggleRadialMenu(self, event):
         if BattleReplay.isPlaying():
@@ -311,7 +319,7 @@ class Events(object):
         pass
 
     def goToLobby(self):
-        pass
+        ServicesLocator.appLoader.getApp().loadView(SFViewLoadParams(CONSTANTS.VIEW_ALIAS))
 
     def goToBattleLoading(self):
         pass
@@ -353,9 +361,10 @@ class Events(object):
 class Settings(object):
 
     def _start(self):
-
         # since WoT 1.10.1
-        g_entitiesFactories.addSettings(ViewSettings(CONSTANTS.VIEW_ALIAS, Flash_UI, CONSTANTS.FILE_NAME, WindowLayer.WINDOW, None, ScopeTemplates.GLOBAL_SCOPE))
+        # noinspection PyArgumentList
+        g_entitiesFactories.addSettings(ViewSettings(
+            CONSTANTS.VIEW_ALIAS, Flash_UI, CONSTANTS.FILE_NAME, WindowLayer.WINDOW, None, ScopeTemplates.GLOBAL_SCOPE))
 
     def _destroy(self):
         g_entitiesFactories.removeSettings(CONSTANTS.VIEW_ALIAS)
@@ -369,8 +378,8 @@ class Flash_Meta(View):
     def py_update(self, alias, props):
         self._printOverrideError('py_update')
 
-    def as_createS(self, alias, type, props):
-        return self.flashObject.as_create(alias, type, props) if self._isDAAPIInited() else None
+    def as_createS(self, alias, compType, props):
+        return self.flashObject.as_create(alias, compType, props) if self._isDAAPIInited() else None
 
     def as_updateS(self, alias, props, params):
         return self.flashObject.as_update(alias, props, params) if self._isDAAPIInited() else None
@@ -436,12 +445,13 @@ class GUIFlash(object):
         g_guiHooks._destroy()
         g_guiSettings._destroy()
 
-    def createComponent(self, alias, compType, props=None):
+    def createComponent(self, alias, compType, props=None, battle=True, lobby=False):
         if not g_guiCache.isComponent(alias):
             compType = g_guiCache.getCustomizedType(compType)
             if g_guiCache.isTypeValid(compType):
-                g_guiCache.create(alias, compType, props)
-                g_guiViews.create(alias, compType, props)
+                g_guiCache.create(alias, compType, props, battle, lobby)
+                if g_guiCache.isActiveComponent(alias):
+                    g_guiViews.create(alias, compType, props)
             else:
                 LOG_ERROR("Invalid component type '%s'!" % alias)
         else:
@@ -450,14 +460,16 @@ class GUIFlash(object):
     def updateComponent(self, alias, props, params=None):
         if g_guiCache.isComponent(alias):
             g_guiCache.update(alias, props)
-            g_guiViews.update(alias, props, params)
+            if g_guiCache.isActiveComponent(alias):
+                g_guiViews.update(alias, props, params)
         else:
             LOG_ERROR("Component '%s' not found!" % alias)
 
     def deleteComponent(self, alias):
         if g_guiCache.isComponent(alias):
+            if g_guiCache.isActiveComponent(alias):
+                g_guiViews.delete(alias)
             g_guiCache.delete(alias)
-            g_guiViews.delete(alias)
         else:
             LOG_ERROR("Component '%s' not found" % alias)
 

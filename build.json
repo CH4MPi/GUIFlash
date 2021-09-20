@@ -13,6 +13,6 @@
         "author": "gambiter",
         "name": "GUIFlash",
         "description": "Flash components for use in python mods.",
-        "version": "0.3.8"
+        "version": "0.3.9"
     }
 }
