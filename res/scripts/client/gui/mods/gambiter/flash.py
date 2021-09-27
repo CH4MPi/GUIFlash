@@ -332,10 +332,12 @@ class Events(object):
         ServicesLocator.appLoader.getApp().loadView(SFViewLoadParams(CONSTANTS.VIEW_ALIAS))
 
     def leaveLobby(self):
-        pass
+        if g_guiViews.ui is not None:
+            g_guiViews.ui.destroy()
 
     def leaveBattle(self):
-        pass
+        if g_guiViews.ui is not None:
+            g_guiViews.ui.destroy()
 
     def resizeStage(self):
         g_guiViews.resize()
