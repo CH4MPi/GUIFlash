@@ -17,8 +17,8 @@
 	{
 		protected var borderEx:UIBorderEx;
 		
-		private var _x:Number;
-		private var _y:Number;
+		public var _x:Number;
+		public var _y:Number;
 		private var _autoSize:Boolean;
 		private var _alignX:String;
 		private var _alignY:String;		
