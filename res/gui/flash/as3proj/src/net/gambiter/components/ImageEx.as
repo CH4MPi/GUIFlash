@@ -5,7 +5,7 @@
 	import flash.events.IOErrorEvent;
 	import flash.net.URLRequest;
 	
-	import net.gambiter.utils.Properties;	
+	import net.gambiter.utils.Properties;
 	import net.gambiter.core.UIComponentEx;
 	
 	public class ImageEx extends UIComponentEx

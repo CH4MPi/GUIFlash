@@ -30,7 +30,7 @@
 			textField.name = "label";
 			addChild(textField);
 			
-			_isHtml = true;			
+			_isHtml = true;
 			_hAlign = Align.LEFT;
 			_vAlign = Align.TOP;
 			
@@ -82,7 +82,7 @@
 				textField.htmlText = text;
 			}
 			else {
-				textField.text = text;			
+				textField.text = text;
 			}
 			initialize();
 		}
@@ -93,7 +93,7 @@
 		}
 		
 		override protected function updateSize():void
-		{			
+		{
 			if (autoSize)
 			{
 				textField.autoSize = TextFieldAutoSize.LEFT;

@@ -1,5 +1,5 @@
 ﻿package net.gambiter.core
-{	
+{
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.display.InteractiveObject;
@@ -10,29 +10,29 @@
 	import net.gambiter.FlashUI;
 	import net.gambiter.utils.Align;
 	import net.gambiter.utils.Properties;
-	import net.gambiter.core.UIBorderEx;	
+	import net.gambiter.core.UIBorderEx;
 	import scaleform.clik.core.UIComponent;
 	
 	public class UIComponentEx extends UIComponent implements IDraggable
 	{
 		protected var borderEx:UIBorderEx;
 		
-		private var _x:Number;
-		private var _y:Number;
+		public var _x:Number;
+		public var _y:Number;
 		private var _autoSize:Boolean;
 		private var _alignX:String;
-		private var _alignY:String;		
+		private var _alignY:String;
 		private var _drag:Boolean;
 		private var _limit:Boolean;
 		private var _isDragging:Boolean;
 		private var _border:Boolean;
 		private var _tooltip:String;
 		private var _alias:String;
-		private var _index:Number;		
+		private var _index:Number;
 		
 		private var _visible:Boolean;
 		private var _radialMenu:Boolean;
-		private var _fullStats:Boolean;		
+		private var _fullStats:Boolean;
 		private var _fullStatsQuestProgress:Boolean;
 		private var _epicMapOverlayVisible:Boolean;
 		private var	_epicRespawnOverlayVisible:Boolean;
@@ -105,7 +105,7 @@
 				(!FlashUI.ui.epicRespawnOverlayVisibility || _epicRespawnOverlayVisible);
 		}
 		
-		private function updateIndex():void		
+		private function updateIndex():void
 		{
 			if (!isNaN(_index) && (_index != parent.getChildIndex(this))) parent.setChildIndex(this, Math.min(_index, parent.numChildren - 1));
 		}
@@ -121,10 +121,10 @@
 		}
 
 		public function updatePosition():void
-		{		
+		{
 			super.x = Math.round(_x + (parent.width - width) * Align.getFactor(_alignX));
 			super.y = Math.round(_y + (parent.height - height) * Align.getFactor(_alignY));
-			if (!_limit) return;			
+			if (!_limit) return;
 			var point:Object = Properties.getLimiter(this, super.x, super.y);
 			super.x = point.x;
 			super.y = point.y;
@@ -133,7 +133,7 @@
 		private function updateProps():void
 		{
 			var last_x:Number = _x;
-			var last_y:Number = _y;			
+			var last_y:Number = _y;
 			_x = Math.round(super.x - (parent.width - width) * Align.getFactor(_alignX));
 			_y = Math.round(super.y - (parent.height - height) * Align.getFactor(_alignY));
 			if ((_x != last_x) || (_y != last_y)) py_updateProps({"x": _x, "y": _y});
@@ -194,7 +194,7 @@
 			_isDragging = false;
 			stopDrag();
 			updateProps();
-		}		
+		}
 		
 		public function get drag():Boolean
 		{
@@ -335,13 +335,13 @@
 		
 		public function get fullStatsQuestProgress():Boolean
 		{
-			return _fullStatsQuestProgress;			
+			return _fullStatsQuestProgress;
 		}
 		
 		public function set fullStatsQuestProgress(value:Boolean):void
 		{
-			if (value != _fullStatsQuestProgress) _fullStatsQuestProgress = value;			
-		}		
+			if (value != _fullStatsQuestProgress) _fullStatsQuestProgress = value;
+		}
 		
 	}
 }

@@ -26,7 +26,7 @@
 					return new ImageEx();
 				// case COMPONENT_TYPE_SHAPE:
 				//	return new ShapeEx();
-				default: 
+				default:
 					return null;
 			}
 		}

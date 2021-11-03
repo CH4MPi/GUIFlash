@@ -1,5 +1,5 @@
 ﻿package net.gambiter.utils
-{	
+{
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.display.DisplayObject;
@@ -14,9 +14,9 @@
 	import net.gambiter.components.ImageEx;
 
 	public class Properties
-	{		
+	{
 		public static function getBound(obj:DisplayObject):Rectangle
-		{			
+		{
 			var objRect:Rectangle = obj.getRect(obj);
 			var objPoint:Point = obj.localToGlobal(new Point(0, 0));
 
@@ -44,7 +44,7 @@
 		public static function setShadow(obj:DisplayObject, props:Object = null):void
 		{
 			if (!obj) return;
-			
+		
 			if (props)
 			{
 				var shadow:DropShadowFilter = new DropShadowFilter();
@@ -95,7 +95,7 @@
 				FlashUI.ui.py_log("Object with linkage \'" + obj.name + "\' doesn`t contain property " + "with name \'" + prop + "\'.");
 			}
 
-			if (obj is UIComponentEx && !(obj is ImageEx)) {
+			if (obj is UIComponentEx) {
 				(obj as UIComponentEx).refresh();
 			}
 		}
@@ -125,17 +125,17 @@
 			if (obj is UIComponentEx) tweens.onUpdate = (obj as UIComponentEx).refresh;
 			
 			if (start) { tweens.onStart = setProperty; tweens.onStartParams = [obj, props]; }
-			else { tweens.onComplete = setProperty; tweens.onCompleteParams = [obj, props]; }				
+			else { tweens.onComplete = setProperty; tweens.onCompleteParams = [obj, props]; }
 
 			if (from) TweenLite.from(obj, duration, tweens);
-			else TweenLite.to(obj, duration, tweens);				
+			else TweenLite.to(obj, duration, tweens);
 		}
 
 		private static function isEmptyObject(obj:Object):Boolean
 		{
 			var isEmpty:Boolean = true;
 			for (var prop:String in obj) { isEmpty = false; break; }
-			return isEmpty;			
+			return isEmpty;
 		}
 
 		public static function getComponentByPath(container:DisplayObjectContainer, path:Array):DisplayObject
