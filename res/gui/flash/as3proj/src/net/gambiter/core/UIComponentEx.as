@@ -3,6 +3,7 @@
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.display.InteractiveObject;
+	import flash.text.TextFieldAutoSize;
 	
 	import net.wg.data.constants.DragType;
 	import net.wg.infrastructure.interfaces.entity.IDraggable;
@@ -300,13 +301,25 @@
 		
 		override public function set width(value:Number):void
 		{
-			_autoSize = false;
+			if (_autoSize is String) {
+				_autoSize = TextFieldAutoSize.NONE;
+			}
+			else 
+			{
+				_autoSize = false;
+			}
 			super.width = value;
 		}
 		
 		override public function set height(value:Number):void
 		{
-			_autoSize = false;
+			if (_autoSize is String) {
+				_autoSize = TextFieldAutoSize.NONE;
+			}
+			else 
+			{
+				_autoSize = false;
+			}
 			super.height = value;
 		}
 		
