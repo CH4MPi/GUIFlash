@@ -3,7 +3,6 @@
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.display.InteractiveObject;
-	import flash.text.TextFieldAutoSize;
 	
 	import net.wg.data.constants.DragType;
 	import net.wg.infrastructure.interfaces.entity.IDraggable;
@@ -20,16 +19,16 @@
 		
 		public var _x:Number;
 		public var _y:Number;
-		private var _autoSize:String;
+		public var _autoSize:*;
 		private var _alignX:String;
-		private var _alignY:String;		
+		private var _alignY:String;
 		private var _drag:Boolean;
 		private var _limit:Boolean;
 		private var _isDragging:Boolean;
 		private var _border:Boolean;
 		private var _tooltip:String;
 		private var _alias:String;
-		private var _index:Number;		
+		private var _index:Number;
 		
 		private var _visible:Boolean;
 		private var _radialMenu:Boolean;
@@ -50,7 +49,7 @@
 			_drag = false;
 			_limit = true;
 			_border = false;
-			_autoSize = TextFieldAutoSize.LEFT;
+			_autoSize = true;
 			_isDragging = false;
 			_alignX = Align.LEFT;
 			_alignY = Align.TOP;
@@ -289,25 +288,25 @@
 			if ((Align.isValidY(value)) && (value != _alignY)) _alignY = value;
 		}
 		
-		public function get autoSize():String
+		public function get autoSize():*
 		{
 			return _autoSize;
 		}
 		
-		public function set autoSize(value:String):void
+		public function set autoSize(value:*):void
 		{
 			if (value != _autoSize) _autoSize = value;
 		}
 		
 		override public function set width(value:Number):void
 		{
-			_autoSize = TextFieldAutoSize.NONE;
+			_autoSize = false;
 			super.width = value;
 		}
 		
 		override public function set height(value:Number):void
 		{
-			_autoSize = TextFieldAutoSize.NONE;
+			_autoSize = false;
 			super.height = value;
 		}
 		
