@@ -32,6 +32,7 @@
 			_isHtml = true;			
 			_hAlign = Align.LEFT;
 			_vAlign = Align.TOP;
+			_autoSize = TextFieldAutoSize.LEFT;
 			
 			textField.width = 0;
 			textField.height = 0;
@@ -115,6 +116,18 @@
 				textField.height = height;
 			}
 			super.updateSize();
+		}
+
+		override public function set width(value:Number):void
+		{
+			_autoSize = TextFieldAutoSize.NONE;
+			super.width = value;
+		}
+		
+		override public function set height(value:Number):void
+		{
+			_autoSize = TextFieldAutoSize.NONE;
+			super.height = value;
 		}
 		
 		public function get text():String
