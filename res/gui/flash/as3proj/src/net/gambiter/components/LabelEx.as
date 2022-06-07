@@ -12,7 +12,7 @@
 	
 	public class LabelEx extends UIComponentEx
 	{
-		public static const NAME_FONT:String = "$Fieldfont";
+		public static const NAME_FONT:String = "$FieldFont";
 		
 		private var textField:TextField;
 		
@@ -38,7 +38,7 @@
 			textField.height = 0;
 			
 			textField.mouseEnabled = false;
-						
+			
 			textField.wordWrap = false;
 			textField.multiline = false;
 			textField.selectable = false;
@@ -116,18 +116,6 @@
 				textField.height = height;
 			}
 			super.updateSize();
-		}
-
-		override public function set width(value:Number):void
-		{
-			_autoSize = TextFieldAutoSize.NONE;
-			super.width = value;
-		}
-		
-		override public function set height(value:Number):void
-		{
-			_autoSize = TextFieldAutoSize.NONE;
-			super.height = value;
 		}
 		
 		public function get text():String
