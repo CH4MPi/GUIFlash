@@ -2,11 +2,11 @@
     "version": 1,
     "software": {
         "animate": "C:\\Program Files\\Adobe\\Adobe Animate 2020\\Animate.exe",
-        "python": "C:\\Program Files\\Python\\python.exe"
+        "python": "C:\\Program Files\\Python2\\python.exe"
     },
     "game": {
-        "folder": "X:\\wot\\ct",
-        "version": "1.17.0.0"
+        "folder": "D:\\wot_ru",
+        "version": "1.18.0.0"
     },
     "info": {
         "id": "guiflash",
