@@ -30,7 +30,8 @@
 		public var epicMapOverlayVisibility:Boolean;
 		public var epicRespawnOverlayVisibility:Boolean;
 		public var battleRoyaleRespawnVisibility:Boolean;
-		
+		public var killCamVisibility:Boolean;
+
 		public var screenSize:Object;
 		private var viewPage:DisplayObjectContainer;
 		private var components:Object;
@@ -61,6 +62,7 @@
 			epicMapOverlayVisibility = false;
 			epicRespawnOverlayVisibility = false;
 			battleRoyaleRespawnVisibility = false
+			killCamVisibility = false;
 			
 			screenSize = {width: SCREEN_WIDTH, height: SCREEN_HEIGHT};
 		}
@@ -159,13 +161,22 @@
 		
 		public function as_battleRoyaleRespawnVisibility(isVisible:Boolean):void
 		{
+			//py_log("as_battleRoyaleRespawnVisibility called: isVisible:" + isVisible + "!");
 			if (isVisible != battleRoyaleRespawnVisibility)
 				battleRoyaleRespawnVisibility = isVisible;
 			for (var alias:String in components)
 				components[alias].updateVisible();
-			//py_log("as_battleRoyaleRespawnVisibility called: isVisible:" + isVisible + "!");
 		}
-		
+
+		public function as_killCamVisibility(isVisible:Boolean):void
+		{
+			//py_log("as_killCamVisibility called: isVisible:" + isVisible + "!");
+			if (isVisible != killCamVisibility)
+				killCamVisibility = isVisible;
+			for (var alias:String in components)
+				components[alias].updateVisible();
+		}
+
 		public function as_create(alias:String, type:String, props:Object):void
 		{
 			if (viewPage) createComponent(alias, type, props);

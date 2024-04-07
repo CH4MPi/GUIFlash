@@ -40,6 +40,7 @@
 		private var _epicMapOverlayVisible:Boolean;
 		private var	_epicRespawnOverlayVisible:Boolean;
 		private var	_battleRoyaleRespawnVisibility:Boolean;
+		private var	_killCamVisibility:Boolean;
 		//public var py_log:Function;
 
 		public function UIComponentEx()
@@ -67,6 +68,7 @@
 			_epicMapOverlayVisible = false;
 			_epicRespawnOverlayVisible = false;
 			_battleRoyaleRespawnVisibility = false;
+			_killCamVisibility = false;
 			focusable = false;
 		}
 		
@@ -111,7 +113,8 @@
 				(!FlashUI.ui.showFullStatsPersonalReserves || _fullStatsPersonalReserves) &&
 				(!FlashUI.ui.epicMapOverlayVisibility || _epicMapOverlayVisible) &&
 				(!FlashUI.ui.epicRespawnOverlayVisibility || _epicRespawnOverlayVisible) &&
-				(!FlashUI.ui.battleRoyaleRespawnVisibility || _battleRoyaleRespawnVisibility);
+				(!FlashUI.ui.battleRoyaleRespawnVisibility || _battleRoyaleRespawnVisibility) &&
+				(!FlashUI.ui.killCamVisibility || _killCamVisibility);
 		}
 		
 		private function updateIndex():void		
@@ -387,6 +390,17 @@
 		public function set fullStatsPersonalReserves(value:Boolean):void
 		{
 			if (value != _fullStatsPersonalReserves) _fullStatsPersonalReserves = value;			
+		}
+
+		public function get killCamVisibility():Boolean
+		{
+			return _killCamVisibility;			
+		}
+		
+		public function set killCamVisibility(value:Boolean):void
+		{
+			if (value != _killCamVisibility) _killCamVisibility = value;			
 		}		
+		
 	}
 }

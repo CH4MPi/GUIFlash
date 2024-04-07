@@ -14,15 +14,15 @@ import BattleReplay
 import Event
 from frameworks.wulf import WindowLayer
 from gui import g_guiResetters
-from gui.Scaleform.framework import g_entitiesFactories, ViewSettings, ScopeTemplates
+from gui.Scaleform.framework import g_entitiesFactories, ScopeTemplates, ViewSettings
 from gui.Scaleform.framework.entities.View import View
 from gui.Scaleform.framework.managers.loaders import SFViewLoadParams
-from gui.shared import g_eventBus, events, EVENT_BUS_SCOPE
+from gui.shared import EVENT_BUS_SCOPE, events, g_eventBus
 from gui.shared.personality import ServicesLocator
 from helpers import dependency
 from skeletons.gui.app_loader import GuiGlobalSpaceID as SPACE_ID
 from skeletons.gui.battle_session import IBattleSessionProvider
-from utils import LOG_NOTE, LOG_DEBUG, LOG_ERROR
+from utils import LOG_DEBUG, LOG_ERROR, LOG_NOTE
 
 
 class CONSTANTS(object):
@@ -176,6 +176,10 @@ class Views(object):
         if self.ui is not None:
             self.ui.as_battleRoyaleRespawnVisibilityS(isVisible)
 
+    def killCamVisibility(self, isVisible):
+        if self.ui is not None:
+            self.ui.as_killCamVisibilityS(isVisible)
+
 
 # noinspection PyMethodMayBeStatic
 class Hooks(object):
@@ -206,6 +210,13 @@ class Hooks(object):
         ctrl = self.sessionProvider.dynamic.respawn
         if ctrl is not None and hasattr(ctrl, 'onRespawnVisibilityChanged'):
             ctrl.onRespawnVisibilityChanged += self.__onRespawnVisibilityChanged
+
+        # WoT 1.24.1 - KILL CAM - throws an error on other clients like Lesta, so we catch and ignore it
+        try:
+            if hasattr(self.sessionProvider.shared, 'killCamCtrl') and self.sessionProvider.shared.killCamCtrl:
+                self.sessionProvider.shared.killCamCtrl.onKillCamModeStateChanged += self.__onKillCamModeStateChanged
+        except AttributeError:
+            LOG_DEBUG('killCamCtrl not found!')
 
         # NOTE: steel hunter select spawn screen
         try:
@@ -252,6 +263,13 @@ class Hooks(object):
         if ctrl is not None:
             ctrl.onRespawnVisibilityChanged -= self.__onRespawnVisibilityChanged
 
+        # WoT 1.24.1 - KILL CAM
+        try:
+            if hasattr(self.sessionProvider.shared, 'killCamCtrl') and self.sessionProvider.shared.killCamCtrl:
+                self.sessionProvider.shared.killCamCtrl.onKillCamModeStateChanged -= self.__onKillCamModeStateChanged
+        except AttributeError:
+            LOG_DEBUG('killCamCtrl not found!')
+
     def __onGUISpaceEntered(self, spaceID):
         if spaceID == SPACE_ID.LOGIN:
             g_guiEvents.goToLogin()
@@ -294,6 +312,13 @@ class Hooks(object):
     def __toggleFullStatsPersonalReserves(self, event):
         isDown = event.ctx['isDown']
         g_guiEvents.toggleFullStatsPersonalReserves(isDown)
+
+    def __onKillCamModeStateChanged(self, state, _):
+        try:
+            from gui.shared.events import DeathCamEvent
+            g_guiEvents.killCamVisible(state not in (DeathCamEvent.State.INACTIVE, DeathCamEvent.State.FINISHED))
+        except ImportError:
+            pass
 
     def __onMapVisibilityChanged(self, isVisible):
         g_guiEvents.epicMapOverlayVisibility(isVisible)
@@ -357,6 +382,9 @@ class Events(object):
     def battleRoyaleSpawnVisibility(self, isShow):
         g_guiViews.battleRoyaleSpawnVisibility(isShow)
 
+    def killCamVisible(self, isVisible):
+        g_guiViews.killCamVisibility(isVisible)
+
 
 # noinspection PyMethodMayBeStatic
 class Settings(object):
@@ -412,6 +440,9 @@ class Flash_Meta(View):
 
     def as_battleRoyaleRespawnVisibilityS(self, isVisible):
         return self.flashObject.as_battleRoyaleRespawnVisibility(isVisible) if self._isDAAPIInited() else None
+
+    def as_killCamVisibilityS(self, isVisible):
+        return self.flashObject.as_killCamVisibility(isVisible) if self._isDAAPIInited() else None
 
 
 class Flash_UI(Flash_Meta):
