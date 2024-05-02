@@ -22,7 +22,7 @@ from gui.shared.personality import ServicesLocator
 from helpers import dependency
 from skeletons.gui.app_loader import GuiGlobalSpaceID as SPACE_ID
 from skeletons.gui.battle_session import IBattleSessionProvider
-from utils import LOG_DEBUG, LOG_ERROR, LOG_NOTE
+from utils import LOG_DEBUG, LOG_ERROR, LOG_NOTE, getParentWindow
 
 
 class CONSTANTS(object):
@@ -313,7 +313,7 @@ class Hooks(object):
         isDown = event.ctx['isDown']
         g_guiEvents.toggleFullStatsPersonalReserves(isDown)
 
-    def __onKillCamModeStateChanged(self, state, _):
+    def __onKillCamModeStateChanged(self, state, *args, **kwargs):
         try:
             from gui.shared.events import DeathCamEvent
             g_guiEvents.killCamVisible(state not in (DeathCamEvent.State.INACTIVE, DeathCamEvent.State.FINISHED))
@@ -337,13 +337,13 @@ class Events(object):
         pass
 
     def goToLobby(self):
-        ServicesLocator.appLoader.getApp().loadView(SFViewLoadParams(CONSTANTS.VIEW_ALIAS))
+        ServicesLocator.appLoader.getApp().loadView(SFViewLoadParams(CONSTANTS.VIEW_ALIAS, parent=getParentWindow()))
 
     def goToBattleLoading(self):
         pass
 
     def goToBattle(self):
-        ServicesLocator.appLoader.getApp().loadView(SFViewLoadParams(CONSTANTS.VIEW_ALIAS))
+        ServicesLocator.appLoader.getApp().loadView(SFViewLoadParams(CONSTANTS.VIEW_ALIAS, parent=getParentWindow()))
 
     def leaveLobby(self):
         if g_guiViews.ui is not None:

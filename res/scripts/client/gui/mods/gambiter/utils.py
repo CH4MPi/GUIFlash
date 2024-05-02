@@ -64,6 +64,14 @@ def debugTime(func):
     return wrapper
 
 
+def getParentWindow():
+    from skeletons.gui.impl import IGuiLoader
+    from helpers import dependency
+    uiLoader = dependency.instance(IGuiLoader)
+    if uiLoader and uiLoader.windowsManager:
+        return uiLoader.windowsManager.getMainWindow()
+
+
 class EventHook(object):
 
     def __init__(self):
