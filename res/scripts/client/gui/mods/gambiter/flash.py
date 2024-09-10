@@ -316,7 +316,9 @@ class Hooks(object):
     def __onKillCamModeStateChanged(self, state, *args, **kwargs):
         try:
             from gui.shared.events import DeathCamEvent
-            g_guiEvents.killCamVisible(state not in (DeathCamEvent.State.INACTIVE, DeathCamEvent.State.FINISHED))
+            if state is DeathCamEvent.State.NONE:
+                return
+            g_guiEvents.killCamVisible(state not in (DeathCamEvent.State.INACTIVE, DeathCamEvent.State.PREPARING, DeathCamEvent.State.FINISHED))
         except ImportError:
             pass
 
