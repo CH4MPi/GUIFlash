@@ -142,7 +142,8 @@ class Views(object):
     def resize(self):
         if self.ui is not None:
             width, height = GUI.screenResolution()
-            self.ui.as_resizeS(width, height)
+            scale = float(ServicesLocator.settingsCore.interfaceScale.get())
+            self.ui.as_resizeS(int(width / scale), int(height / scale))
 
     def cursor(self, isShow):
         if self.ui is not None:
