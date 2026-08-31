@@ -27,6 +27,7 @@
 		public var showFullStats:Boolean;
 		public var showFullStatsQuestProgress:Boolean;
 		public var showFullStatsPersonalReserves:Boolean;
+		public var isPreBattleHighlightsVisible:Boolean;
 		public var epicMapOverlayVisibility:Boolean;
 		public var epicRespawnOverlayVisibility:Boolean;
 		public var battleRoyaleRespawnVisibility:Boolean;
@@ -59,6 +60,7 @@
 			showFullStats = false;
 			showFullStatsQuestProgress = false;
 			showFullStatsPersonalReserves = false;
+			isPreBattleHighlightsVisible = false;
 			epicMapOverlayVisibility = false;
 			epicRespawnOverlayVisibility = false;
 			battleRoyaleRespawnVisibility = false
@@ -144,6 +146,12 @@
 		public function as_fullStatsPersonalReserves(arg:Boolean):void
 		{
 			if (arg != showFullStatsPersonalReserves) showFullStatsPersonalReserves = arg;
+			for (var alias:String in components) components[alias].updateVisible();
+		}
+
+		public function as_setPreBattleHighlightsState(arg:Boolean):void
+		{
+			if (arg != isPreBattleHighlightsVisible) isPreBattleHighlightsVisible = arg;
 			for (var alias:String in components) components[alias].updateVisible();
 		}
 

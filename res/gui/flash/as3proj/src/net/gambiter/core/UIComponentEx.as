@@ -37,6 +37,7 @@
 		private var _fullStats:Boolean;		
 		private var _fullStatsQuestProgress:Boolean;
 		private var _fullStatsPersonalReserves:Boolean;
+		private var _isPreBattleHighlightsVisible:Boolean;
 		private var _epicMapOverlayVisible:Boolean;
 		private var	_epicRespawnOverlayVisible:Boolean;
 		private var	_battleRoyaleRespawnVisibility:Boolean;
@@ -65,6 +66,7 @@
 			_fullStats = false;
 			_fullStatsQuestProgress = false;
 			_fullStatsPersonalReserves = false;
+			_isPreBattleHighlightsVisible = false;
 			_epicMapOverlayVisible = false;
 			_epicRespawnOverlayVisible = false;
 			_battleRoyaleRespawnVisibility = false;
@@ -114,7 +116,8 @@
 				(!FlashUI.ui.epicMapOverlayVisibility || _epicMapOverlayVisible) &&
 				(!FlashUI.ui.epicRespawnOverlayVisibility || _epicRespawnOverlayVisible) &&
 				(!FlashUI.ui.battleRoyaleRespawnVisibility || _battleRoyaleRespawnVisibility) &&
-				(!FlashUI.ui.killCamVisibility || _killCamVisibility);
+				(!FlashUI.ui.killCamVisibility || _killCamVisibility) &&
+				(!FlashUI.ui.isPreBattleHighlightsVisible || _isPreBattleHighlightsVisible);
 		}
 		
 		private function updateIndex():void		
@@ -392,6 +395,17 @@
 			if (value != _fullStatsPersonalReserves) _fullStatsPersonalReserves = value;			
 		}
 
+		// PreBattleHighlightsVisible
+		public function get preBattleHighlightsVisible():Boolean
+		{
+			return _isPreBattleHighlightsVisible;			
+		}
+		
+		public function set preBattleHighlightsVisible(value:Boolean):void
+		{
+			if (value != _isPreBattleHighlightsVisible) _isPreBattleHighlightsVisible = value;			
+		}
+		
 		public function get killCamVisibility():Boolean
 		{
 			return _killCamVisibility;			

@@ -145,33 +145,37 @@ class Views(object):
             scale = float(ServicesLocator.settingsCore.interfaceScale.get())
             self.ui.as_resizeS(int(width / scale), int(height / scale))
 
-    def cursor(self, isShow):
+    def cursor(self, isVisible):
         if self.ui is not None:
-            self.ui.as_cursorS(isShow)
+            self.ui.as_cursorS(isVisible)
 
-    def radialMenu(self, isShow):
+    def radialMenu(self, isVisible):
         if self.ui is not None:
-            self.ui.as_radialMenuS(isShow)
+            self.ui.as_radialMenuS(isVisible)
 
-    def fullStats(self, isShow):
+    def fullStats(self, isVisible):
         if self.ui is not None:
-            self.ui.as_fullStatsS(isShow)
+            self.ui.as_fullStatsS(isVisible)
 
-    def fullStatsQuestProgress(self, isShow):
+    def fullStatsQuestProgress(self, isVisible):
         if self.ui is not None:
-            self.ui.as_fullStatsQuestProgressS(isShow)
+            self.ui.as_fullStatsQuestProgressS(isVisible)
 
-    def fullStatsPersonalReserves(self, isShow):
+    def fullStatsPersonalReserves(self, isVisible):
         if self.ui is not None:
-            self.ui.as_fullStatsPersonalReservesS(isShow)
+            self.ui.as_fullStatsPersonalReservesS(isVisible)
 
-    def epicMapOverlayVisibility(self, isShow):
+    def setPreBattleHighlightsState(self, isVisible):
         if self.ui is not None:
-            self.ui.as_epicMapOverlayVisibilityS(isShow)
+            self.ui.as_setPreBattleHighlightsStateS(isVisible)
 
-    def epicRespawnOverlayVisibility(self, isShow):
+    def epicMapOverlayVisibility(self, isVisible):
         if self.ui is not None:
-            self.ui.as_epicRespawnOverlayVisibilityS(isShow)
+            self.ui.as_epicMapOverlayVisibilityS(isVisible)
+
+    def epicRespawnOverlayVisibility(self, isVisible):
+        if self.ui is not None:
+            self.ui.as_epicRespawnOverlayVisibilityS(isVisible)
 
     def battleRoyaleSpawnVisibility(self, isVisible):
         if self.ui is not None:
@@ -182,9 +186,57 @@ class Views(object):
             self.ui.as_killCamVisibilityS(isVisible)
 
 
+class BattleRoyaleSpawnListener(object):
+    """Receives Battle Royale spawn-selection state from SpawnController.
+
+    The listener deliberately has no Battle Royale imports.  SpawnController
+    uses this interface structurally, so GUIFlash remains loadable on clients
+    where the Battle Royale package is not installed.
+    """
+
+    def setSpawnPoints(self, points):
+        pass
+
+    def showSpawnPoints(self):
+        g_guiEvents.battleRoyaleSpawnVisibility(True)
+
+    def closeSpawnPoints(self):
+        g_guiEvents.battleRoyaleSpawnVisibility(False)
+
+    def updatePoint(self, vehicleId, pointId, prevPointId):
+        pass
+
+    def updateCloseTime(self, timeLeft, state):
+        pass
+
+    def componentChanged(self):
+        pass
+
+    def updateRespawnTime(self, timeLeft):
+        pass
+
+    def updateTeammateRespawnTime(self, timeLeft):
+        pass
+
+    def updateBlockToResurrectTime(self, blockTime):
+        pass
+
+    def updateLives(self, livesLeft, prev):
+        pass
+
+    def onSelectPoint(self, pointId):
+        pass
+
+
 # noinspection PyMethodMayBeStatic
 class Hooks(object):
     sessionProvider = dependency.descriptor(IBattleSessionProvider)
+
+    _eventNames = ('GO_TO_PREBATTLE_HIGHLIGHTS', 'RETURN_FROM_PREBATTLE_HIGHLIGHTS')
+
+    def __init__(self):
+        self.__battleRoyaleSpawnCtrl = None
+        self.__battleRoyaleSpawnListener = BattleRoyaleSpawnListener()
 
     def _start(self):
         ServicesLocator.appLoader.onGUISpaceEntered += self.__onGUISpaceEntered
@@ -201,6 +253,19 @@ class Hooks(object):
         g_eventBus.addListener(events.GameEvent.FULL_STATS, self.__toggleFullStats, scope=EVENT_BUS_SCOPE.BATTLE)
         g_eventBus.addListener(events.GameEvent.FULL_STATS_QUEST_PROGRESS, self.__toggleFullStatsQuestProgress, scope=EVENT_BUS_SCOPE.BATTLE)
         g_eventBus.addListener(events.GameEvent.FULL_STATS_PERSONAL_RESERVES, self.__toggleFullStatsPersonalReserves, scope=EVENT_BUS_SCOPE.BATTLE)
+
+        if all(hasattr(events.GameEvent, eventName) for eventName in self._eventNames):
+            g_eventBus.addListener(
+                events.GameEvent.GO_TO_PREBATTLE_HIGHLIGHTS,
+                self.__onPreBattleHighlightsActive,
+                scope=EVENT_BUS_SCOPE.BATTLE
+            )
+            g_eventBus.addListener(
+                events.GameEvent.RETURN_FROM_PREBATTLE_HIGHLIGHTS,
+                self.__onPreBattleHighlightsDeactivated,
+                scope=EVENT_BUS_SCOPE.BATTLE
+            )
+
         g_guiResetters.add(self.__onResizeStage)
 
         ctrl = self.sessionProvider.dynamic.maps
@@ -219,33 +284,7 @@ class Hooks(object):
         except AttributeError:
             LOG_DEBUG('killCamCtrl not found!')
 
-        # NOTE: steel hunter select spawn screen
-        try:
-            from battle_royale.gui.Scaleform.daapi.view.battle import BattleRoyalePage
-            spawnCtrl = self.sessionProvider.dynamic.spawn
-            if spawnCtrl is not None:
-                if hasattr(BattleRoyalePage, 'showSpawnPoints'):
-                    global hooked_showSpawnPoints
-                    if hooked_showSpawnPoints is None:
-                        hooked_showSpawnPoints = BattleRoyalePage.showSpawnPoints
-                        BattleRoyalePage.showSpawnPoints = newBattleRoyalePageShowSpawnPoints
-                        LOG_DEBUG('BattleRoyalePage:showSpawnPoints hooked!')
-
-                if hasattr(BattleRoyalePage, 'closeSpawnPoints'):
-                    global hooked_closeSpawnPoints
-                    if hooked_closeSpawnPoints is None:
-                        hooked_closeSpawnPoints = BattleRoyalePage.closeSpawnPoints
-                        BattleRoyalePage.closeSpawnPoints = newBattleRoyalePageCloseSpawnPoints
-                        LOG_DEBUG('BattleRoyalePage:closeSpawnPoints hooked!')
-
-                # TEST: check if this works more accurate
-                # ctrl = self.sessionProvider.dynamic.maps
-                # if ctrl is not None:
-                #     ctrl.onOverlayTriggered += self.onBattleRoyaleSpawnVisibilityChanged
-                #     self.onBattleRoyaleSpawnVisibilityChanged(ctrl.overlayActive)
-                # TEST: !check if this works more accurate
-        except ImportError:
-            pass
+        self.__registerBattleRoyaleSpawnListener()
 
     def _dispose(self):
         g_eventBus.removeListener(events.GameEvent.SHOW_CURSOR, self.__handleShowCursor, EVENT_BUS_SCOPE.GLOBAL)
@@ -254,14 +293,29 @@ class Hooks(object):
         g_eventBus.removeListener(events.GameEvent.FULL_STATS, self.__toggleFullStats, scope=EVENT_BUS_SCOPE.BATTLE)
         g_eventBus.removeListener(events.GameEvent.FULL_STATS_QUEST_PROGRESS, self.__toggleFullStatsQuestProgress, scope=EVENT_BUS_SCOPE.BATTLE)
         g_eventBus.removeListener(events.GameEvent.FULL_STATS_PERSONAL_RESERVES, self.__toggleFullStatsPersonalReserves, scope=EVENT_BUS_SCOPE.BATTLE)
+
+        if all(hasattr(events.GameEvent, eventName) for eventName in self._eventNames):
+            g_eventBus.removeListener(
+                events.GameEvent.GO_TO_PREBATTLE_HIGHLIGHTS,
+                self.__onPreBattleHighlightsActive,
+                scope=EVENT_BUS_SCOPE.BATTLE
+            )
+            g_eventBus.removeListener(
+                events.GameEvent.RETURN_FROM_PREBATTLE_HIGHLIGHTS,
+                self.__onPreBattleHighlightsDeactivated,
+                scope=EVENT_BUS_SCOPE.BATTLE
+            )
+
         g_guiResetters.discard(self.__onResizeStage)
+
+        self.__unregisterBattleRoyaleSpawnListener()
 
         ctrl = self.sessionProvider.dynamic.maps
         if ctrl and hasattr(ctrl, 'onVisibilityChanged'):
             ctrl.onVisibilityChanged -= self.__onMapVisibilityChanged
 
         ctrl = self.sessionProvider.dynamic.respawn
-        if ctrl is not None:
+        if ctrl is not None and hasattr(ctrl, 'onRespawnVisibilityChanged'):
             ctrl.onRespawnVisibilityChanged -= self.__onRespawnVisibilityChanged
 
         # WoT 1.24.1 - KILL CAM
@@ -270,6 +324,36 @@ class Hooks(object):
                 self.sessionProvider.shared.killCamCtrl.onKillCamModeStateChanged -= self.__onKillCamModeStateChanged
         except AttributeError:
             LOG_DEBUG('killCamCtrl not found!')
+
+    def __registerBattleRoyaleSpawnListener(self):
+        """Register only when the optional Battle Royale controller is available."""
+        try:
+            spawnCtrl = getattr(self.sessionProvider.dynamic, 'spawn', None)
+            if (spawnCtrl is None or
+                    not hasattr(spawnCtrl, 'addRuntimeView') or
+                    not hasattr(spawnCtrl, 'removeRuntimeView')):
+                return
+
+            if self.__battleRoyaleSpawnCtrl is spawnCtrl:
+                return
+
+            self.__unregisterBattleRoyaleSpawnListener()
+            spawnCtrl.addRuntimeView(self.__battleRoyaleSpawnListener)
+            self.__battleRoyaleSpawnCtrl = spawnCtrl
+            LOG_DEBUG('Battle Royale spawn listener registered!')
+        except StandardError as error:
+            LOG_DEBUG('Battle Royale spawn listener unavailable: %s' % error)
+
+    def __unregisterBattleRoyaleSpawnListener(self):
+        if self.__battleRoyaleSpawnCtrl is None:
+            return
+
+        try:
+            self.__battleRoyaleSpawnCtrl.removeRuntimeView(self.__battleRoyaleSpawnListener)
+        except StandardError as error:
+            LOG_DEBUG('Battle Royale spawn listener cleanup failed: %s' % error)
+        finally:
+            self.__battleRoyaleSpawnCtrl = None
 
     def __onGUISpaceEntered(self, spaceID):
         if spaceID == SPACE_ID.LOGIN:
@@ -313,6 +397,12 @@ class Hooks(object):
     def __toggleFullStatsPersonalReserves(self, event):
         isDown = event.ctx['isDown']
         g_guiEvents.toggleFullStatsPersonalReserves(isDown)
+
+    def __onPreBattleHighlightsActive(self, _):
+        g_guiEvents.setPreBattleHighlightsState(True)
+
+    def __onPreBattleHighlightsDeactivated(self, _):
+        g_guiEvents.setPreBattleHighlightsState(False)
 
     def __onKillCamModeStateChanged(self, state, *args, **kwargs):
         try:
@@ -361,29 +451,32 @@ class Events(object):
     def resizeStage(self):
         g_guiViews.resize()
 
-    def toggleCursor(self, isShow):
-        g_guiViews.cursor(isShow)
+    def toggleCursor(self, isVisible):
+        g_guiViews.cursor(isVisible)
 
-    def toggleRadialMenu(self, isShow):
-        g_guiViews.radialMenu(isShow)
+    def toggleRadialMenu(self, isVisible):
+        g_guiViews.radialMenu(isVisible)
 
-    def toggleFullStats(self, isShow):
-        g_guiViews.fullStats(isShow)
+    def toggleFullStats(self, isVisible):
+        g_guiViews.fullStats(isVisible)
 
-    def toggleFullStatsQuestProgress(self, isShow):
-        g_guiViews.fullStatsQuestProgress(isShow)
+    def toggleFullStatsQuestProgress(self, isVisible):
+        g_guiViews.fullStatsQuestProgress(isVisible)
 
-    def toggleFullStatsPersonalReserves(self, isShow):
-        g_guiViews.fullStatsPersonalReserves(isShow)
+    def toggleFullStatsPersonalReserves(self, isVisible):
+        g_guiViews.fullStatsPersonalReserves(isVisible)
 
-    def epicMapOverlayVisibility(self, isShow):
-        g_guiViews.epicMapOverlayVisibility(isShow)
+    def setPreBattleHighlightsState(self, isVisible):
+        g_guiViews.setPreBattleHighlightsState(isVisible)
 
-    def epicRespawnOverlayVisibility(self, isShow):
-        g_guiViews.epicRespawnOverlayVisibility(isShow)
+    def epicMapOverlayVisibility(self, isVisible):
+        g_guiViews.epicMapOverlayVisibility(isVisible)
 
-    def battleRoyaleSpawnVisibility(self, isShow):
-        g_guiViews.battleRoyaleSpawnVisibility(isShow)
+    def epicRespawnOverlayVisibility(self, isVisible):
+        g_guiViews.epicRespawnOverlayVisibility(isVisible)
+
+    def battleRoyaleSpawnVisibility(self, isVisible):
+        g_guiViews.battleRoyaleSpawnVisibility(isVisible)
 
     def killCamVisible(self, isVisible):
         g_guiViews.killCamVisibility(isVisible)
@@ -434,6 +527,9 @@ class Flash_Meta(View):
 
     def as_fullStatsPersonalReservesS(self, isVisible):
         return self.flashObject.as_fullStatsPersonalReserves(isVisible) if self._isDAAPIInited() else None
+
+    def as_setPreBattleHighlightsStateS(self, isVisible):
+        return self.flashObject.as_setPreBattleHighlightsState(isVisible) if self._isDAAPIInited() else None
 
     def as_epicMapOverlayVisibilityS(self, isVisible):
         return self.flashObject.as_epicMapOverlayVisibility(isVisible) if self._isDAAPIInited() else None
@@ -517,28 +613,3 @@ g_guiViews = Views()
 g_guiHooks = Hooks()
 g_guiEvents = Events()
 g_guiSettings = Settings()
-
-hooked_showSpawnPoints = None  # Type: Callable
-hooked_closeSpawnPoints = None
-
-
-# noinspection PyCallingNonCallable
-def newBattleRoyalePageShowSpawnPoints(self):
-    try:
-        LOG_DEBUG('newBattleRoyalePageShowSpawnPoints called!')
-        g_guiHooks.onBattleRoyaleSpawnVisibilityChanged(True)
-    except StandardError:
-        pass
-    finally:
-        hooked_showSpawnPoints(self)
-
-
-# noinspection PyCallingNonCallable
-def newBattleRoyalePageCloseSpawnPoints(self):
-    try:
-        LOG_DEBUG('newBattleRoyalePageCloseSpawnPoints called!')
-        g_guiHooks.onBattleRoyaleSpawnVisibilityChanged(False)
-    except StandardError:
-        pass
-    finally:
-        hooked_closeSpawnPoints(self)

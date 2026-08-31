@@ -276,7 +276,7 @@
 				//customBG.graphics.moveTo(0,0)
 				customBG.graphics.drawRoundRect(0 - bg_margin - bg_thickness, 0 - bg_margin - bg_thickness, textField.width + (bg_margin*2) + (bg_thickness*2), textField.height + (bg_margin*2) + (bg_thickness*2), bg_ellipseWidth);
 			} else {
-				customBG.graphics.drawRect(0 - bg_margin -  bg_thickness, 0 - bg_margin - bg_thickness, textField.width + (bg_margin*2) + (bg_thickness*2), textField.height + (bg_margin*2) + (bg_thickness*2));
+				customBG.graphics.drawRect     (0 - bg_margin - bg_thickness, 0 - bg_margin - bg_thickness, textField.width + (bg_margin*2) + (bg_thickness*2), textField.height + (bg_margin*2) + (bg_thickness*2));
 			}
 
 			if (bg_fill)

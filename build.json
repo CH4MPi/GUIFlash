@@ -2,17 +2,17 @@
     "version": 1,
     "software": {
         "animate": "C:\\Program Files\\Adobe\\Adobe Animate 2020\\Animate.exe",
-        "python": "C:\\Program Files\\Python\\python.exe"
+        "python": "c:\\_Coding\\Python27\\python.exe"
     },
     "game": {
         "folder": "X:\\wot\\ct",
-        "version": "1.26.0.0"
+        "version": "2.4.0.0"
     },
     "info": {
         "id": "guiflash",
         "author": "gambiter",
         "name": "GUIFlash",
         "description": "Flash components for use in python mods.",
-        "version": "0.6.4"
+        "version": "0.6.5"
     }
 }
