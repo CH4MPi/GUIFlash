@@ -548,8 +548,11 @@ class Flash_UI(Flash_Meta):
 
     def _populate(self):
         super(Flash_UI, self)._populate()
-        g_guiHooks._populate()
         g_guiViews.ui = self
+        # Runtime listeners may synchronously report their current state while
+        # being registered (notably Battle Royale spawn selection in replays).
+        # The view bridge must be available before that registration happens.
+        g_guiHooks._populate()
         g_guiViews.resize()
         g_guiViews.createAll()
 
