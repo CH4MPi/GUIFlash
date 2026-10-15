@@ -14,7 +14,8 @@ import BattleReplay
 import Event
 from frameworks.wulf import WindowLayer
 from gui import g_guiResetters
-from gui.Scaleform.framework import g_entitiesFactories, ScopeTemplates, ViewSettings
+from gui.Scaleform.framework import ScopeTemplates, ViewSettings
+from gui.mods.gambiter.compat import addSettings as addViewSettings, removeSettings as removeViewSettings
 from gui.Scaleform.framework.entities.View import View
 from gui.Scaleform.framework.managers.loaders import SFViewLoadParams
 from gui.shared import EVENT_BUS_SCOPE, events, g_eventBus
@@ -486,11 +487,11 @@ class Events(object):
 class Settings(object):
 
     def _start(self):
-        g_entitiesFactories.addSettings(ViewSettings(CONSTANTS.VIEW_ALIAS, Flash_UI, CONSTANTS.FILE_NAME, WindowLayer.WINDOW, None, ScopeTemplates.GLOBAL_SCOPE))
+        addViewSettings(ViewSettings(CONSTANTS.VIEW_ALIAS, Flash_UI, CONSTANTS.FILE_NAME, WindowLayer.WINDOW, None, ScopeTemplates.GLOBAL_SCOPE))
         return
 
     def _destroy(self):
-        g_entitiesFactories.removeSettings(CONSTANTS.VIEW_ALIAS)
+        removeViewSettings(CONSTANTS.VIEW_ALIAS)
 
 
 class Flash_Meta(View):
