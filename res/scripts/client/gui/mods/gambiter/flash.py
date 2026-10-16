@@ -14,15 +14,25 @@ import BattleReplay
 import Event
 from frameworks.wulf import WindowLayer
 from gui import g_guiResetters
-from gui.Scaleform.framework import g_entitiesFactories, ScopeTemplates, ViewSettings
+from gui.Scaleform.framework import ScopeTemplates, ViewSettings
 from gui.Scaleform.framework.entities.View import View
 from gui.Scaleform.framework.managers.loaders import SFViewLoadParams
 from gui.shared import EVENT_BUS_SCOPE, events, g_eventBus
 from gui.shared.personality import ServicesLocator
 from helpers import dependency
-from skeletons.gui.app_loader import GuiGlobalSpaceID as SPACE_ID
+from skeletons.gui.app_loader import GuiGlobalSpaceID
 from skeletons.gui.battle_session import IBattleSessionProvider
 from utils import LOG_DEBUG, LOG_ERROR, LOG_NOTE, getParentWindow
+
+# WoT < 2.4.1
+try:
+    from gui.Scaleform.framework import g_entitiesFactories
+except ImportError:
+    g_entitiesFactories = None
+
+# WoT >= 2.4.1
+if g_entitiesFactories is None:
+    from skeletons.gui.impl import IGuiLoader
 
 
 class CONSTANTS(object):
@@ -186,6 +196,7 @@ class Views(object):
             self.ui.as_killCamVisibilityS(isVisible)
 
 
+# noinspection PyMethodMayBeStatic
 class BattleRoyaleSpawnListener(object):
     """Receives Battle Royale spawn-selection state from SpawnController.
 
@@ -356,19 +367,19 @@ class Hooks(object):
             self.__battleRoyaleSpawnCtrl = None
 
     def __onGUISpaceEntered(self, spaceID):
-        if spaceID == SPACE_ID.LOGIN:
+        if spaceID == GuiGlobalSpaceID.LOGIN:
             g_guiEvents.goToLogin()
-        elif spaceID == SPACE_ID.LOBBY:
+        elif spaceID == GuiGlobalSpaceID.LOBBY:
             g_guiEvents.goToLobby()
-        elif spaceID == SPACE_ID.BATTLE_LOADING:
+        elif spaceID == GuiGlobalSpaceID.BATTLE_LOADING:
             g_guiEvents.goToBattleLoading()
-        elif spaceID == SPACE_ID.BATTLE:
+        elif spaceID == GuiGlobalSpaceID.BATTLE:
             g_guiEvents.goToBattle()
 
     def __onGUISpaceLeft(self, spaceID):
-        if spaceID == SPACE_ID.LOBBY:
+        if spaceID == GuiGlobalSpaceID.LOBBY:
             g_guiEvents.leaveLobby()
-        elif spaceID == SPACE_ID.BATTLE:
+        elif spaceID == GuiGlobalSpaceID.BATTLE:
             g_guiEvents.leaveBattle()
 
     def __onResizeStage(self):
@@ -404,7 +415,7 @@ class Hooks(object):
     def __onPreBattleHighlightsDeactivated(self, _):
         g_guiEvents.setPreBattleHighlightsState(False)
 
-    def __onKillCamModeStateChanged(self, state, *args, **kwargs):
+    def __onKillCamModeStateChanged(self, state, *_args, **_kwargs):
         try:
             from gui.shared.events import DeathCamEvent
             if state is DeathCamEvent.State.NONE:
@@ -482,17 +493,6 @@ class Events(object):
         g_guiViews.killCamVisibility(isVisible)
 
 
-# noinspection PyMethodMayBeStatic
-class Settings(object):
-
-    def _start(self):
-        g_entitiesFactories.addSettings(ViewSettings(CONSTANTS.VIEW_ALIAS, Flash_UI, CONSTANTS.FILE_NAME, WindowLayer.WINDOW, None, ScopeTemplates.GLOBAL_SCOPE))
-        return
-
-    def _destroy(self):
-        g_entitiesFactories.removeSettings(CONSTANTS.VIEW_ALIAS)
-
-
 class Flash_Meta(View):
 
     def py_log(self, *args):
@@ -544,6 +544,7 @@ class Flash_Meta(View):
         return self.flashObject.as_killCamVisibility(isVisible) if self._isDAAPIInited() else None
 
 
+# noinspection PyProtectedMember
 class Flash_UI(Flash_Meta):
 
     def _populate(self):
@@ -572,6 +573,27 @@ class Flash_UI(Flash_Meta):
 
 
 # noinspection PyMethodMayBeStatic
+class Settings(object):
+
+    def _start(self):
+        _settings = ViewSettings(CONSTANTS.VIEW_ALIAS, Flash_UI, CONSTANTS.FILE_NAME, WindowLayer.WINDOW, None, ScopeTemplates.GLOBAL_SCOPE)
+
+        if g_entitiesFactories is not None:
+            g_entitiesFactories.addSettings(_settings)
+        else:
+            guiLoader = dependency.instance(IGuiLoader)
+            guiLoader.entitiesFactory.addSettings(_settings)
+        return
+
+    def _destroy(self):
+        if g_entitiesFactories is not None:
+            g_entitiesFactories.removeSettings(CONSTANTS.VIEW_ALIAS)
+        else:
+            guiLoader = dependency.instance(IGuiLoader)
+            guiLoader.entitiesFactory.removeSettings(CONSTANTS.VIEW_ALIAS)
+
+
+# noinspection PyMethodMayBeStatic, PyProtectedMember
 class GUIFlash(object):
 
     def __init__(self):
